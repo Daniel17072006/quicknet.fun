@@ -86,40 +86,11 @@ padding-bottom: 3.75vh;
 text-align: center;
 }
 }
-<head>
-    <title>Data de Hoje</title>
-    <style>
-        #data-hoje {
-            color: red;
-        }
-    </style>
-</head>
-<body data-rsssl=1>
-    <b>Atenção: esse vídeo está sendo perseguido injustamente pela Indústria Farmacêutica e saíra do ar <span id="data-hoje"></span> </b>
-
-    <script>
-        // Obtém a data de hoje
-        var hoje = new Date();
-
-        // Formata a data no formato desejado (exemplo: 20/06/2023)
-        var dia = hoje.getDate();
-        var mes = hoje.getMonth() + 1; // Os meses são indexados a partir de 0
-        var ano = hoje.getFullYear();
-
-        // Adiciona um zero à esquerda para dias e meses menores que 10
-        if (dia < 10) {
-            dia = '0' + dia;
-        }
-        if (mes < 10) {
-            mes = '0' + mes;
-        }
-
-        // Combina os valores formatados para criar a data no formato "dd/mm/yyyy"
-        var dataFormatada = dia + '/' + mes + '/' + ano;
-
-        // Atualiza o conteúdo do elemento com a data de hoje
-        document.getElementById('data-hoje').textContent = dataFormatada;
-    </script>
+</style>
+<h1>
+<b>Atenção: esse vídeo está sendo perseguido&nbsp;<span style="color:#ff0000">injustamente</span>&nbsp;pela Indústria Farmacêutica e saíra do ar&nbsp;<span class="sm">12/9/2023</span>.</b>
+</h1>
+</div>
 </div>
 <style>
 .video-1658581462028Iuugbk {
