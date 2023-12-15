@@ -1,317 +1,811 @@
 
 <!DOCTYPE html>
-<html lang="pt-BR">
-  <head><base href="safepage.html">
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Roboto:wght@300;400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.onload=null;this.removeAttribute('media');">
-    <link rel="preload" href="https://scripts.converteai.net/ee23f5b0-45e7-4e27-a038-209fb03d31cc/players/64f391eae1c7560009bd4352/player.js" as="script">
-<link rel="preload" href="https://cdn.converteai.net/lib/js/smartplayer/v1/smartplayer.min.js" as="script">
-<link rel="preload" href="https://images.converteai.net/ee23f5b0-45e7-4e27-a038-209fb03d31cc/players/64f391eae1c7560009bd4352/thumbnail.jpg" as="image">
-<link rel="preload" href="https://cdn.converteai.net/ee23f5b0-45e7-4e27-a038-209fb03d31cc/64f391ab02d65b000a08954f/main.m3u8" as="fetch">
-<link rel="dns-prefetch" href="https://cdn.converteai.net">
-<link rel="dns-prefetch" href="https://scripts.converteai.net">
-<link rel="dns-prefetch" href="https://images.converteai.net">
-<link rel="dns-prefetch" href="https://api.vturb.com.br">
+<html lang="pt-BR" dir="ltr">
+<head>
+<meta name="robots" content="index, follow">
+<link rel="shortcut icon" href="data:" />
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.blogfernanda-machado.online/ozena03">
+<meta property="og:title" content="Blog Fernanda Machado">
+<meta property="og:description" content="Gelatina Caseira">
+<meta property="og:image" content="https://img.imageboss.me/atm/cdn/format:auto/u/ZMV6tDjZ80WD2oTMgNlgHj3MdGG2/Pictures/KiBkcv1001769.jpeg">
+<meta charset="utf-8">
+<script>
+  function moveCTA(container) {
+   const cta = container.querySelector(".smartplay + .smartplayer-call-action");
 
-<script src="https://cdn.cloakup.me/checker.js" data-campaign="c79813b9628ccd5446531f95aaf2649e.3175136663daa538763aaf7f8396a576cdb9670cfa279bd106b76c15fde66fb3a1f19cc729c6757d07cbaed489ca6b514e0930322df0e730ea5bba15e75e2e9793f33e3d7cee"></script>
+   if (!cta) return;
 
-    <title>01</title>
+   container.parentNode.insertBefore(cta, container.nextSibling);
+  }
 
-    <script>
-        // Função para bloquear o botão direito do mouse
-        function bloquearBotaoDireito(event) {
-            event = event || window.event;
-            if (event.preventDefault) {
-                event.preventDefault();
-            } else {
-                event.returnValue = false;
-            }
-        }
+  function insertBeforePlayer(instance, prefix) {
+   if(!instance) return;
 
-        // Adicionar o manipulador de eventos para o botão direito do mouse
-        document.addEventListener('contextmenu', bloquearBotaoDireito);
-    </script>
+   const player = instance.mobileContainer || instance.container;
 
+   const container = document.createElement("div");
+
+   container.id = `${prefix}-${instance.options.id}`
+   container.classList.add(prefix);
+
+   player.parentNode.insertBefore(container, player);
+
+   container.appendChild(player);
+
+   return container;
+  }
+
+  function mountContainers() {
+   const instances = window.smartplayer.instances;
+
+   instances.forEach(instance => {
+    const container = insertBeforePlayer(instance, `player-fake-fs`)
+
+    if(!container) return;
+
+    moveCTA(container)
+
+    let firstClick = instance.resume?.inResume === undefined;
+
+    container.addEventListener("click", () => {
+     console.log(instance.resume)
+     if (!firstClick && container.dataset.fullscreen === "true") instance.pause();
+
+     firstClick = false;
+    });
+   });
+
+   instances.forEach(instance => insertBeforePlayer(instance, `player-auto-height`));
+  }
+
+  function mountStyles() {
+   const styles = document.createElement("style");
+
+   styles.innerHTML = `
+    .player-fake-fs[data-fullscreen='true'] {
+     display: flex !important;
+     align-items: center !important;
+     background-color: #000 !important;
+     height: 100vh !important;
+     width: 100vw !important;
+     cursor: pointer;
+    }
+
+    .player-fake-fs[data-fullscreen='true'] .player-auto-height .smartplayer-mobile-container {
+     max-width: 100% !important;
+    }
+
+    .player-fake-fs[data-fullscreen='false'] .player-auto-height {
+     width: 100% !important;
+    }
+
+    .player-fake-fs[data-fullscreen='false'] {
+     margin-left: 0 !important;
+    }
+
+    .player-auto-height {
+     margin: 0 auto;
+     width: 100%;
+    }
+   `;
+
+   document.head.appendChild(styles);
+  }
+
+  function adjustXPositionFs() {
+   const currentFs = document.querySelectorAll(".player-fake-fs[data-fullscreen='true']");
+
+   currentFs.forEach(container => {
+    container.style.marginLeft = "0";
+
+    const position = container.getBoundingClientRect()
+
+    if(position.left <= 0) return;
+
+    container.style.marginLeft = `-${position.left}px`;
+   });
+  }
+
+  function changeWidthByHeight() {
+   const containers = document.querySelectorAll(".player-auto-height");
+
+   containers.forEach(container => {
+    const video = container.querySelector("video");
+
+    if (!video) return;
+
+    const aspectRatio = video.clientWidth / video.clientHeight;
+
+    const windowHeight = window.innerHeight;
+    const newWidth = windowHeight * aspectRatio;
+
+    const width = (newWidth / window.innerWidth) * 100;
+
+    container.style.width = `${width >= 100 ? 100 : width}%`;
+   });
+  }
+
+  function scrollToFS(container) {
+   const position = container.getBoundingClientRect();
+
+   window.scrollTo({
+    top: position.top + window.scrollY,
+    left: position.left + window.scrollX,
+   });
+  }
+
+  function toggleFs(id, inFullscreen = false) {
+   const container = document.getElementById(`player-fake-fs-${id}`);
+
+   if (!container) return;
+
+   container.dataset.fullscreen = inFullscreen.toString()
+
+   if (inFullscreen) {
+    window.addEventListener("resize", changeWidthByHeight);
+
+    changeWidthByHeight();
+    adjustXPositionFs();
+
+    return scrollToFS(container);
+   }
+
+   window.removeEventListener("resize", changeWidthByHeight);
+  }
+
+  function mountFakeFsEvents() {
+   const instances = window.smartplayer.instances;
+
+   window.addEventListener("resize", adjustXPositionFs);
+
+   instances.forEach(instance => {
+    instance.on("play", () => toggleFs(instance.options.id, true));
+
+    instance.on("pause", () => toggleFs(instance.options.id, false));
+   });
+  }
+
+  function customEvents() {
+   mountContainers();
+   mountStyles();
+   mountFakeFsEvents()
+  }
+
+  function checkPlayerLoaded() {
+   if (window.smartplayer && window.smartplayer.instances) return customEvents()
+
+   return setTimeout(checkPlayerLoaded, 100)
+  }
+
+  window.addEventListener("load", () => checkPlayerLoaded())
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+<title>Blog Fernanda Machado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Roboto:wght@300;400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.onload=null;this.removeAttribute('media');">
+<style>@media (max-width:640px){.atm-hidden-mobile{display:none}}@media (min-width:640px){.atm-hidden-desktop{display:none}}.col-span-1{grid-column: span 1 / span 1;}.col-span-2{grid-column: span 2 / span 2;}.items-center{align-items:center}.grid-cols-6{grid-template-columns: repeat(6, minmax(0, 1fr))}.grid-cols-5{	grid-template-columns: repeat(5, minmax(0, 1fr))}.grid-cols-4{grid-template-columns: repeat(4, minmax(0, 1fr))}.grid-cols-2{grid-template-columns: repeat(2, minmax(0, 1fr))}.grid-cols-3{grid-template-columns: repeat(3, minmax(0, 1fr))}.grid-cols-1{grid-template-columns: repeat(1, minmax(0, 1fr))}.grid{display:grid}.basis-1\/2{flex-basis:50%}.flex{display:flex}.gap-1{gap:4px}.gap-2{gap:8px}.gap-4{gap:16px}.gap-6{gap:24px}.gap-12{48px}.gap-24{gap:96px}.justify-center{justify-content:center}.basis-full{flex-basis:100%}html{scroll-behavior:smooth;-webkit-touch-callout:none;-webkit-user-select:none;-khtml-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}body,center,dd,del,div,dt,em,footer,h1,h2,h3,h4,h5,h6,i,iframe,img,p,q,s,small,span,strike,strong,sub,sup,table,tbody,td,tr,u{margin:-1px 0 0 0;padding:0;border:0;font-size:100%;font:inherit;vertical-align:baseline;font-family:Roboto,sans-serif}.u{-moz-user-select:none;-webkit-user-select:none;cursor:default}table{border-collapse:collapse;border-spacing:0}body{line-height:1}body{background-color:#ffffff;overflow-x:hidden}iframe,img,svg{max-width:100%}h1,h1 b,h1 span,h2,h2 b,h2 span,h3,h3 b,h3 span{font-family:Poppins,sans-serif}a{text-decoration:none;font-family:Roboto,sans-serif}a.btn{font-family:Montserrat,sans-serif}em span.lg,em span.md,em span.sm{font-style:italic}@media (max-width:600px){.flex-large,.flex-small{margin-right:0!important;margin-bottom:16px}}.flexrow{display:flex;flex-direction:row;flex-wrap:wrap;align-items:center}.flex-large,.flex-small{flex-basis:100%}.flex-large:last-child,.flex-small:last-child{margin-right:0!important}@media (min-width:600px){.flex-small{flex:1;margin-bottom:0!important;padding-bottom:0!important}.flex-small.half{flex:0 0 calc(1 / 2 * 100%)}.flex-small.one-fifth{flex:0 0 calc(1 / 5 * 100%)}.flex-small.two-fifths{flex:0 0 calc(2 / 5 * 100%)}.flex-small.one-fourth{flex:0 0 calc(1 / 4 * 100%)}.flex-small.two-fourths{flex:0 0 calc(2 / 4 * 100%)}.flex-small.three-fourths{flex:0 0 calc(3 / 4 * 100%)}.flex-small.one-third{flex:0 0 calc(1 / 3 * 100%)}.flex-small.two-thirds{flex:0 0 calc(2 / 3 * 100%)}}@media (min-width:1000px){.flex-large{flex:1;margin-bottom:0}.flex-large.half{flex:0 0 calc(1 / 2 * 100%)}.flex-large.one-fifth{flex:0 0 calc(1 / 5 * 100%)}.flex-large.two-fifths{flex:0 0 calc(2 / 5 * 100%)}.flex-large.one-fourth,.flex-large.two-fourths{flex:0 0 calc(1 / 4 * 100%)}.flex-large.three-fourths{flex:0 0 calc(3 / 4 * 100%)}.flex-large.one-third{flex:0 0 calc(1 / 3 * 100%)}.flex-large.two-thirds{flex:0 0 calc(2 / 3 * 100%)}}@media (min-width:640px){.sm\:gap-1{gap:6px}.sm\:gap-2{gap:12px!important}.sm\:gap-4{gap:24px}.sm\:gap-6{gap:32px}.sm\:gap-12{gap:64px}.sm\:gap-24{gap:128px}.sm\:grid-cols-6{grid-template-columns:repeat(6,minmax(0,1fr))}.sm\:grid-cols-5{grid-template-columns:repeat(5,minmax(0,1fr))}.sm\:grid-cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}.sm\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.sm\:grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.sm\:grid-cols-1{grid-template-columns:repeat(1,minmax(0,1fr))}}</style>
+</head>
+<body id="_ZMV6tDjZ80WD2oTMgNlgHj3MdGG2" data-page="_8LCvab7Yo64XoIzrZfoG">
+<style>
+.QqPumf4765741 {display: none}
+@media (max-width: 640px) {
+html {overflow-x:hidden}
+}
+</style>
+<style>.zooming { animation: zooming 1.25s ease infinite; } @keyframes zooming { 0% { transform: scale(1, 1); } 50% { transform: scale(1.1, 1.1); } 100% { transform: scale(1, 1); } }</style>
+<style>.px-1{padding-left:4px;padding-right:4px}.pt-0.5{padding-top:2px}.mt-4{margin-top:16px}@media (min-width:640px){.sm\:text-sm{font-size:14px;line-height:20px}}.mt-2{margin-top:8px}.mb-2{margin-bottom:8px}.flex{display:flex}.w-full{width:100%}.space-x-1>:not([hidden])~:not([hidden]){margin-left:.25rem}.items-center{align-items:center}.font-\[Helvetica\]{font-family:Helvetica,Arial,sans-serif}.cursor-pointer{cursor:pointer}.rounded-full{border-radius:99999px}.h-12{height:48px}.w-12{width:48px}.flex-col{flex-direction:column}.py-1{padding-top:4px;padding-bottom:4px}.px-3{padding-left:12px;padding-right:12px}.pl-0\.5,.px-0\.5{padding-left:2px}.rounded-\[18px\]{border-radius:18px}.bg-stone-100{background-color:#f5f5f4}.px-0\.5{padding-right:2px}.font-semibold{font-weight:600}.text-\[\#365899\]{color:#365899}.text-\[13px\]{font-size:13px}.leading-4{line-height:16px}.hover\:underline:hover{text-decoration-line:underline}.text-sm{font-size:14px}.relative{position:relative}.justify-between{justify-content:space-between}.grow{flex-grow:1}.text-xs{font-size:12px}.text-\[\#90949c\]{color:#90949c}.ml-px{margin-left:1px}.gap-1{gap:4px}.w-fit{width:fit-content}.hidden{display:none}.-mt-1{margin-top:-4px}.-mt-2{margin-top:-8px}.mr-2{margin-right:8px}.h-4,.h-5{height:16px}.drop-shadow{--tw-drop-shadow:drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1)) drop-shadow(0 1px 1px rgba(0, 0, 0, 0.06));filter:var(--tw-drop-shadow)}.bg-slate-50{background-color:#f8fafc}.py-0\.5{padding-top:2px;padding-bottom:2px}.pr-1{padding-right:4px}.block{display:block}.w-4{width:16px}.-ml-1{margin-left:-4px}.ml-4{margin-left:16px}.gap-x-0\.5{column-gap:2px}.mr-0\.5{margin-right:2px;margin-left:2px}.border-l{border-left-width:1px}.border-slate-300{border-color:#cbd5e1}.border-dotted{border-style:dotted}.ml-5{margin-left:20px}.h-8{height:32px}.w-8{width:32px}.h-10{height:40px}.w-10{width:40px}@media (min-width:640px){.sm\:w-16{width:64px}.sm\:ml-12{margin-left:48px}}.pl-2{padding-left:8px}</style>
+<div class="division-LhQnBk6320023__wrapper">
+<style>
+#division-LhQnBk6320023 {
+border: none;
+border-radius: ;
+margin: 0;
+position: relative;
+padding: 1vh 20vw 1vh 20vw;
+background-color: #ffffff;
+}
+@media (max-width:1200px) {
+#division-LhQnBk6320023 {
+padding: 0.75vh 15vw 0.75vh 15vw;
+margin: 0;
+}
+}
+@media (max-width:600px) {
+#division-LhQnBk6320023 {
+margin: 0;
+padding: 1.5vh 1.5vw 1.5vh 1.5vw;
+}
+}
+</style>
+<div id="division-LhQnBk6320023" class="yfbwtS4747246">
+<div class="container-czNquH6328277">
+<style>
+.justify-center {
+justify-content: center;
+}
+@media (max-width: 640px) {
+.m-justify-center {
+justify-content:center;
+}
+}
+.container-czNquH6328277-element {
+border: none;
+box-shadow: none;
+background-color: #ffffff;
+border-radius: ;
+padding: 16px 16px 16px 16px;
+text-align: ;
+margin: 0 auto 0 auto;
+box-sizing: border-box;
+max-width: 100%;
+}
+@media (max-width: 1200px) {
+.container-czNquH6328277-element {
+margin: 0 auto 0 auto;
+padding: 0.8vh 0.8vw 0.8vh 0.8vw;
+}
+}
+@media (max-width: 640px) {
+.container-czNquH6328277-element {
+margin: 0 auto 0 auto;
+padding: 1.5vh 1.5vw 1.5vh 1.5vw;
+;
+}
+}
+</style>
+<div class="container-czNquH6328277-element">
+</div>
+</div>
+<div class="container-IqxYyb6329989">
+<style>
+.justify-center {
+justify-content: center;
+}
+@media (max-width: 640px) {
+.m-justify-center {
+justify-content:center;
+}
+}
+.container-IqxYyb6329989-element {
+border: none;
+box-shadow: none;
+background-color: #ffffff;
+border-radius: ;
+padding: 16px 16px 16px 16px;
+text-align: ;
+margin: 0 auto 0 auto;
+box-sizing: border-box;
+max-width: 100%;
+}
+@media (max-width: 1200px) {
+.container-IqxYyb6329989-element {
+margin: 0 auto 0 auto;
+padding: 0.8vh 0.8vw 0.8vh 0.8vw;
+}
+}
+@media (max-width: 640px) {
+.container-IqxYyb6329989-element {
+margin: 0 auto 0 auto;
+padding: 1.5vh 1.5vw 1.5vh 1.5vw;
+;
+}
+}
+</style>
+<div class="container-IqxYyb6329989-element">
+</div>
+</div>
+</div>
+</div>
+<div class="division-uaBxMx5669761__wrapper">
+<style>
+#division-uaBxMx5669761 {
+border: none;
+border-radius: ;
+margin: 0;
+position: relative;
+padding: 1vh 24vw 1vh 24vw;
+background-color: #ffffff;
+}
+@media (max-width:1200px) {
+#division-uaBxMx5669761 {
+padding: 0.75vh 18vw 0.75vh 18vw;
+margin: 0;
+}
+}
+@media (max-width:600px) {
+#division-uaBxMx5669761 {
+margin: 0;
+padding: 1.5vh 4.5vw 1.5vh 4.5vw;
+}
+}
+</style>
+<div id="division-uaBxMx5669761" class="bnXqda4747247">
+<style>
+.video-Lbqnjr2094477 {
+border: none;
+box-shadow: none;
+border-radius: undefined;
+}
+.video-Lbqnjr2094477 #smartplayer {
+border-radius: undefined !important;
+}
+video.smartplayer-video {
+border-radius: 0px !important;
+}
+</style>
+<div class="video-Lbqnjr2094477">
+<div id="vid_657c75c7483a64000a2cd2c4" style="position:relative;width:100%;padding: 56.25% 0 0;"><img id="thumb_657c75c7483a64000a2cd2c4" src="https://images.converteai.net/8e60568f-6c77-400e-95d3-e7102dd539d1/players/657c75c7483a64000a2cd2c4/thumbnail.jpg" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:block;"><div id="backdrop_657c75c7483a64000a2cd2c4" style="position:absolute;top:0;width:100%;height:100%;-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);"></div></div><script type="text/javascript" id="scr_657c75c7483a64000a2cd2c4">var s=document.createElement("script");s.src="https://scripts.converteai.net/8e60568f-6c77-400e-95d3-e7102dd539d1/players/657c75c7483a64000a2cd2c4/player.js",s.async=!0,document.head.appendChild(s);</script>
+</div>
+<div class="button-xElfID1051139 QqPumf4765741">
+<style>
+a.button-xElfID1051139-element {
+background-color: #00dd00;
+border-radius: 16px;
+border: none;
+color: #ffffff;
+padding: 16px 32px 16px 32px;
+font-weight: 600;
+display: block;
+width: fit-content;
+text-align: center;
+margin: 2vh auto 2vh auto;
+font-size: 1.49vw;
+box-sizing: border-box;
+max-width: 100%;
+transition: all 0.5s ease-in-out;
+}
+a.button-xElfID1051139-element:hover {
+filter: brightness(1.2);
+}
+@media (max-width: 1200px) {
+a.button-xElfID1051139-element {
+font-size: 1.69vw;
+margin: 1.32vh auto 1.5vh auto;
+padding: 8px 16px 8px 16px;
+}
+}
+@media (max-width: 640px) {
+a.button-xElfID1051139-element {
+font-size: 3.94vw;
+padding: 12px 24px 12px 24px;
+margin: 1vh auto 1vh auto;
+width: ;
+}
+}
+</style>
+<a href="https://go.perfectpay.com.br/PPU38CNLRS2" target="_blank" class="btn button-xElfID1051139-element zooming">
+Quero a receita por 97,00
+</a>
+</div>
+</div>
+</div>
+<div class="division-YpxDGF2560226__wrapper">
+<style>
+#division-YpxDGF2560226 {
+border: none;
+border-radius: ;
+margin: 0;
+position: relative;
+padding: 2vh 24vw 1vh 24vw;
+background-color: #ffffff;
+}
+@media (max-width:1200px) {
+#division-YpxDGF2560226 {
+padding: 1.5vh 18vw 0.75vh 18vw;
+margin: 0;
+}
+}
+@media (max-width:600px) {
+#division-YpxDGF2560226 {
+margin: 0;
+padding: 4.5vh 4.5vw 1.5vh 4.5vw;
+}
+}
+</style>
+<div id="division-YpxDGF2560226" class="nIsqwB4747248">
+<div class="divider-lrdKoN2899371">
+<style>
+.divider-lrdKoN2899371-element {
+height: 1px;
+background-color: #adadad;
+border: none;
+opacity: 1;
+margin: 2vh 0 2vh 0;
+}
+@media (max-width: 1200px) {
+.divider-lrdKoN2899371-element {
+margin: 1.32vh 0 1.5vh 0;
+}
+}
+@media (max-width: 640px) {
+.divider-lrdKoN2899371-element {
+margin: 0.5vh 0 1vh 0;
+}
+}
+</style>
+<hr class="divider-lrdKoN2899371-element">
+</div>
+<style>.px-1{padding-left:4px;padding-right:4px}.pt-0.5{padding-top:2px}.mt-4{margin-top:16px}@media (min-width:640px){.sm\:text-sm{font-size:14px;line-height:20px}}.mt-2{margin-top:8px}.mb-2{margin-bottom:8px}.flex{display:flex}.w-full{width:100%}.space-x-1>:not([hidden])~:not([hidden]){margin-left:.25rem}.items-center{align-items:center}.font-\[Helvetica\]{font-family:Helvetica,Arial,sans-serif}.cursor-pointer{cursor:pointer}.rounded-full{border-radius:99999px}.h-12{height:48px}.w-12{width:48px}.flex-col{flex-direction:column}.py-1{padding-top:4px;padding-bottom:4px}.px-3{padding-left:12px;padding-right:12px}.pl-0\.5,.px-0\.5{padding-left:2px}.rounded-\[18px\]{border-radius:18px}.bg-stone-100{background-color:#f5f5f4}.px-0\.5{padding-right:2px}.font-semibold{font-weight:600}.text-\[\#365899\]{color:#365899}.text-\[13px\]{font-size:13px}.leading-4{line-height:16px}.hover\:underline:hover{text-decoration-line:underline}.text-sm{font-size:14px}.relative{position:relative}.justify-between{justify-content:space-between}.grow{flex-grow:1}.text-xs{font-size:12px}.text-\[\#90949c\]{color:#90949c}.ml-px{margin-left:1px}.gap-1{gap:4px}.w-fit{width:fit-content}.hidden{display:none}.-mt-1{margin-top:-4px}.-mt-2{margin-top:-8px}.mr-2{margin-right:8px}.h-4,.h-5{height:16px}.drop-shadow{--tw-drop-shadow:drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1)) drop-shadow(0 1px 1px rgba(0, 0, 0, 0.06));filter:var(--tw-drop-shadow)}.bg-slate-50{background-color:#f8fafc}.py-0\.5{padding-top:2px;padding-bottom:2px}.pr-1{padding-right:4px}.block{display:block}.w-4{width:16px}.z-10{z-index:10}.-ml-1{margin-left:-4px}.ml-4{margin-left:16px}.gap-x-0\.5{column-gap:2px}.mr-0\.5{margin-right:2px;margin-left:2px}.border-l{border-left-width:1px}.border-slate-300{border-color:#cbd5e1}.border-dotted{border-style:dotted}.ml-5{margin-left:20px}.h-8{height:32px}.w-8{width:32px}.h-10{height:40px}.w-10{width:40px}@media (min-width:640px){.sm\:w-16{width:64px}.sm\:ml-12{margin-left:48px}}.pl-2{padding-left:8px}</style>
+<div class="fbComments-dPMaKu4532310" style="margin-left:auto;margin-right:auto">
+<style>
+.fbComments-dPMaKu4532310-element {
+padding: 16px;
+border-radius:20px;
+background-color:#fff;
+}
+.fbComments-dPMaKu4532310-element p, .fbComments-dPMaKu4532310-element span {
+font-family: 'Helvetica', 'Arial', sans-serif;
+}
+</style>
+<div id="testimonials" class="fbComments-dPMaKu4532310-element">
+<p class="text-xs sm:text-sm leading-4 font-semibold mb-2">
+Mostrando 6 comentários
+</p>
+<div class="mb-2">
+<div class="flex w-full space-x-1 items-center font-[Helvetica]">
+<img src="https://img.imageboss.me/atm/cdn/format:auto/u/ZMV6tDjZ80WD2oTMgNlgHj3MdGG2/l/WfEJER9507584.png" class="cursor-pointer rounded-full h-10 w-10">
+<div class="flex w-full flex-col py-1 px-3 rounded-[18px] bg-stone-100">
+<div class="px-0.5 py-1">
+<p class="font-semibold text-[#365899] text-[13px] leading-4 cursor-pointer hover:underline">
+Ana Silva
+</p>
+<p class="text-sm leading-4 pt-0.5">
+Fernanda parabéns pelo seu trabalho. Te acompanho há mais de 4 anos e AMO suas receitas!
+</p>
+</div>
+</div>
+</div>
+<div class="flex w-full justify-between">
+<div class="w-12 sm:w-16"></div>
+<div class="grow flex gap-1 text-xs pt-0.5">
+<p class="font-semibold cursor-pointer hover:underline text-[#90949c]">
+Curtir
+</p>
+<p class="text-[#90949c]">·</p>
+<p class="font-semibold cursor-pointer hover:underline text-[#90949c]">
+Responder
+</p>
+<p class="text-[#90949c]">·</p>
+<div class="text-[#90949c] flex gap-x-0.5 cursor-pointer hover:underline">
+<p class="text-xs text-[#90949c]">
+1
+</p>
+<p class="text-[#90949c] ">min</p>
+</div>
+</div>
+<div class="-mt-2 mr-2 h-5 flex items-center relative drop-shadow rounded-full bg-slate-50 py-0.5 px-1 w-fit">
+<img class="w-4 block" src="https://img.imageboss.me/atm/cdn/p/l.png">
+<img class="w-4 -ml-1 mr-0.5" src="https://img.imageboss.me/atm/cdn/p/h.png">
+<span class="text-xs text-[#90949c] pt-0.5">
+59
+</span>
+</div>
+</div>
+</div>
+<div class="mb-2">
+<div class="flex w-full space-x-1 items-center font-[Helvetica]">
+<img src="https://img.imageboss.me/atm/cdn/format:auto/u/ZMV6tDjZ80WD2oTMgNlgHj3MdGG2/l/WhziXc9275564.png" class="cursor-pointer rounded-full h-10 w-10">
+<div class="flex w-full flex-col py-1 px-3 rounded-[18px] bg-stone-100">
+<div class="px-0.5 py-1">
+<p class="font-semibold text-[#365899] text-[13px] leading-4 cursor-pointer hover:underline">
+Julia Almeida
+</p>
+<p class="text-sm leading-4 pt-0.5">
+Olha Fernanda, eu estava passando pela pior fase da minha vida! Pedi muito a Deus que me ajudasse e graças a Ele achei esse seu vídeo. Já perdi 12 quilos em 20 dias. As vezes eu nem acredito. Muuito obrigada, linda!
+</p>
+</div>
+</div>
+</div>
+<div class="flex w-full justify-between">
+<div class="w-12 sm:w-16"></div>
+<div class="grow flex gap-1 text-xs pt-0.5">
+<p class="font-semibold cursor-pointer hover:underline text-[#90949c]">
+Curtir
+</p>
+<p class="text-[#90949c]">·</p>
+<p class="font-semibold cursor-pointer hover:underline text-[#90949c]">
+Responder
+</p>
+<p class="text-[#90949c]">·</p>
+<div class="text-[#90949c] flex gap-x-0.5 cursor-pointer hover:underline">
+<p class="text-xs text-[#90949c]">
+1
+</p>
+<p class="text-[#90949c] ">min</p>
+</div>
+</div>
+<div class="-mt-2 mr-2 h-5 flex items-center relative drop-shadow rounded-full bg-slate-50 py-0.5 px-1 w-fit">
+<img class="w-4 block" src="https://img.imageboss.me/atm/cdn/p/l.png">
+<img class="w-4 -ml-1 mr-0.5" src="https://img.imageboss.me/atm/cdn/p/h.png">
+<span class="text-xs text-[#90949c] pt-0.5">
+20
+</span>
+</div>
+</div>
+</div>
+<div class="mb-2">
+<div class="flex w-full space-x-1 items-center font-[Helvetica]">
+<img src="https://img.imageboss.me/atm/cdn/format:auto/u/ZMV6tDjZ80WD2oTMgNlgHj3MdGG2/l/AzXBlW9391488.png" class="cursor-pointer rounded-full h-10 w-10">
+<div class="flex w-full flex-col py-1 px-3 rounded-[18px] bg-stone-100">
+<div class="px-0.5 py-1">
+<p class="font-semibold text-[#365899] text-[13px] leading-4 cursor-pointer hover:underline">
+Karine Ribeiro de Lima
+</p>
+<p class="text-sm leading-4 pt-0.5">
+Oi Fernanda!! Seus vídeos são sempre os melhores! Muito obrigada pela receita. Já estou usando há 9 dias seguidos e perdi quase 7 quilos! Fantástico!
+</p>
+</div>
+</div>
+</div>
+<div class="flex w-full justify-between">
+<div class="w-12 sm:w-16"></div>
+<div class="grow flex gap-1 text-xs pt-0.5">
+<p class="font-semibold cursor-pointer hover:underline text-[#90949c]">
+Curtir
+</p>
+<p class="text-[#90949c]">·</p>
+<p class="font-semibold cursor-pointer hover:underline text-[#90949c]">
+Responder
+</p>
+<p class="text-[#90949c]">·</p>
+<div class="text-[#90949c] flex gap-x-0.5 cursor-pointer hover:underline">
+<p class="text-xs text-[#90949c]">
+1
+</p>
+<p class="text-[#90949c] ">min</p>
+</div>
+</div>
+<div class="-mt-2 mr-2 h-5 flex items-center relative drop-shadow rounded-full bg-slate-50 py-0.5 px-1 w-fit">
+<img class="w-4 block" src="https://img.imageboss.me/atm/cdn/p/l.png">
+<img class="w-4 -ml-1 mr-0.5" src="https://img.imageboss.me/atm/cdn/p/h.png">
+<span class="text-xs text-[#90949c] pt-0.5">
+42
+</span>
+</div>
+</div>
+</div>
+<div class="mb-2">
+<div class="flex w-full space-x-1 items-center font-[Helvetica]">
+<img src="https://img.imageboss.me/atm/cdn/format:auto/u/ZMV6tDjZ80WD2oTMgNlgHj3MdGG2/l/rKhBvc9424267.png" class="cursor-pointer rounded-full h-10 w-10">
+<div class="flex w-full flex-col py-1 px-3 rounded-[18px] bg-stone-100">
+<div class="px-0.5 py-1">
+<p class="font-semibold text-[#365899] text-[13px] leading-4 cursor-pointer hover:underline">
+Cristina de Araujo
+</p>
+<p class="text-sm leading-4 pt-0.5">
+Vídeo muito bem explicado e objetivo!
+</p>
+</div>
+</div>
+</div>
+<div class="flex w-full justify-between">
+<div class="w-12 sm:w-16"></div>
+<div class="grow flex gap-1 text-xs pt-0.5">
+<p class="font-semibold cursor-pointer hover:underline text-[#90949c]">
+Curtir
+</p>
+<p class="text-[#90949c]">·</p>
+<p class="font-semibold cursor-pointer hover:underline text-[#90949c]">
+Responder
+</p>
+<p class="text-[#90949c]">·</p>
+<div class="text-[#90949c] flex gap-x-0.5 cursor-pointer hover:underline">
+<p class="text-xs text-[#90949c]">
+1
+</p>
+<p class="text-[#90949c] ">min</p>
+</div>
+</div>
+<div class="-mt-2 mr-2 h-5 flex items-center relative drop-shadow rounded-full bg-slate-50 py-0.5 px-1 w-fit">
+<img class="w-4 block" src="https://img.imageboss.me/atm/cdn/p/l.png">
+<img class="w-4 -ml-1 mr-0.5" src="https://img.imageboss.me/atm/cdn/p/h.png">
+<span class="text-xs text-[#90949c] pt-0.5">
+60
+</span>
+</div>
+</div>
+</div>
+<div class="mb-2">
+<div class="flex w-full space-x-1 items-center font-[Helvetica]">
+<img src="https://img.imageboss.me/atm/cdn/format:auto/u/ZMV6tDjZ80WD2oTMgNlgHj3MdGG2/l/yWaWHn9321879.png" class="cursor-pointer rounded-full h-10 w-10">
+<div class="flex w-full flex-col py-1 px-3 rounded-[18px] bg-stone-100">
+<div class="px-0.5 py-1">
+<p class="font-semibold text-[#365899] text-[13px] leading-4 cursor-pointer hover:underline">
+Carolina Borges
+</p>
+<p class="text-sm leading-4 pt-0.5">
+E eu que já tinha os ingredientes em casa! kkkk já vou fazer a receitinha agora mesmo
+</p>
+</div>
+</div>
+</div>
+<div class="flex w-full justify-between">
+<div class="w-12 sm:w-16"></div>
+<div class="grow flex gap-1 text-xs pt-0.5">
+<p class="font-semibold cursor-pointer hover:underline text-[#90949c]">
+Curtir
+</p>
+<p class="text-[#90949c]">·</p>
+<p class="font-semibold cursor-pointer hover:underline text-[#90949c]">
+Responder
+</p>
+<p class="text-[#90949c]">·</p>
+<div class="text-[#90949c] flex gap-x-0.5 cursor-pointer hover:underline">
+<p class="text-xs text-[#90949c]">
+1
+</p>
+<p class="text-[#90949c] ">min</p>
+</div>
+</div>
+<div class="-mt-2 mr-2 h-5 flex items-center relative drop-shadow rounded-full bg-slate-50 py-0.5 px-1 w-fit">
+<img class="w-4 block" src="https://img.imageboss.me/atm/cdn/p/l.png">
+<img class="w-4 -ml-1 mr-0.5" src="https://img.imageboss.me/atm/cdn/p/h.png">
+<span class="text-xs text-[#90949c] pt-0.5">
+38
+</span>
+</div>
+</div>
+</div>
+<div class="mb-2">
+<div class="flex w-full space-x-1 items-center font-[Helvetica]">
+<img src="https://img.imageboss.me/atm/cdn/format:auto/u/ZMV6tDjZ80WD2oTMgNlgHj3MdGG2/l/gnYlnP9539448.png" class="cursor-pointer rounded-full h-10 w-10">
+<div class="flex w-full flex-col py-1 px-3 rounded-[18px] bg-stone-100">
+<div class="px-0.5 py-1">
+<p class="font-semibold text-[#365899] text-[13px] leading-4 cursor-pointer hover:underline">
+Simone Moura Campos
+</p>
+<p class="text-sm leading-4 pt-0.5">
+Não entendo porque nutricionistas não ensinam isso para os seus pacientes...graças a Deus existem pessoas como você que querem nos ajudar!
+</p>
+</div>
+</div>
+</div>
+<div class="flex w-full justify-between">
+<div class="w-12 sm:w-16"></div>
+<div class="grow flex gap-1 text-xs pt-0.5">
+<p class="font-semibold cursor-pointer hover:underline text-[#90949c]">
+Curtir
+</p>
+<p class="text-[#90949c]">·</p>
+<p class="font-semibold cursor-pointer hover:underline text-[#90949c]">
+Responder
+</p>
+<p class="text-[#90949c]">·</p>
+<div class="text-[#90949c] flex gap-x-0.5 cursor-pointer hover:underline">
+<p class="text-xs text-[#90949c]">
+1
+</p>
+<p class="text-[#90949c] ">min</p>
+</div>
+</div>
+<div class="-mt-2 mr-2 h-5 flex items-center relative drop-shadow rounded-full bg-slate-50 py-0.5 px-1 w-fit">
+<img class="w-4 block" src="https://img.imageboss.me/atm/cdn/p/l.png">
+<img class="w-4 -ml-1 mr-0.5" src="https://img.imageboss.me/atm/cdn/p/h.png">
+<span class="text-xs text-[#90949c] pt-0.5">
+17
+</span>
+</div>
+</div>
+</div>
+<p class="text-xs sm:text-sm leading-4 font-semibold mt-4" style="color:#555;text-align:center;">
+Você precisa estar logado para comentar.
+</p>
+</div>
+</div>
+</div>
+</div>
+<div class="division-vpMWkb2003884__wrapper">
+<style>
+#division-vpMWkb2003884 {
+border: none;
+border-radius: ;
+margin: 8vh 0 0 0;
+position: relative;
+padding: 2vh 14vw 2vh 14vw;
+background-color: #000000;
+}
+@media (max-width:1200px) {
+#division-vpMWkb2003884 {
+padding: 1.5vh 10.5vw 1.5vh 10.5vw;
+margin: 8vh 0 0 0;
+}
+}
+@media (max-width:600px) {
+#division-vpMWkb2003884 {
+margin: 3vh 0 0 0;
+padding: 3vh 4.5vw 3vh 4.5vw;
+}
+}
+</style>
+<div id="division-vpMWkb2003884" class="niIfQd4747254">
+<div class="footer-kYYnSy0094784">
+<style>
+.footer-kYYnSy0094784-element {
+text-align: center;
+font-size: 0.80vw;
+color: #ffffff;
+}
+.footer-kYYnSy0094784-element a {
+padding: 0 !important;
+color: #ffffff !important;
+}
+@media (max-width:1200px) {
+.footer-kYYnSy0094784-element {
+text-align: center;
+font-size: 1.30vw;
+color: #ffffff;
+}
+}
+@media (max-width:640px) {
+.footer-kYYnSy0094784-element {
+text-align: center;
+font-size: 2.20vw;
+color: #ffffff;
+}
+}
+</style>
+<footer class="footer-kYYnSy0094784-element">
+<p><strong>Copyright 2023 – ®</strong></p>
+<p style="margin-top:4px;">Blog Fernanda Machado</p>
+<div style="display:flex;align-items:center;justify-content:center;margin-top:24px;">
+<a id="t" style="margin-right:12px" href="#" target="_blank">
+Termos de Uso
+</a> <span style="margin-right:12px">·</span>
+<a id="p" href="#" target="_blank">
+Privacidade
+</a>
+</div>
+<p style="margin-top:24px;">
+</p>
+<script>
+          const pr = window.location.href + "privacidade",
+            te = window.location.href + "termos";
+            document.getElementById("p").setAttribute("href", pr), document.getElementById("t").setAttribute("href", te);
+</script>
+</footer></div>
+</div>
+</div>
 
 <script>
-    function atualizarData() {
-        const diasSemana = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
-        const meses = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
-        const dataAtual = new Date();
-
-        const diaSemana = diasSemana[dataAtual.getDay()];
-        const dia = dataAtual.getDate();
-        const mes = meses[dataAtual.getMonth()];
-        const ano = dataAtual.getFullYear();
-
-        const hora = dataAtual.getHours();
-        const minutos = dataAtual.getMinutes();
-
-        const elementoData = document.getElementById('data');
-
-        if (hora < 18) {
-            const horasAtras = 3;
-            elementoData.textContent = `${diaSemana}, ${dia} de ${mes} de ${ano} - Atualizado há ${horasAtras} horas atrás`;
-        } else {S
-            const horaFixa = '17:30';
-            elementoData.textContent = `${diaSemana}, ${dia} de ${mes} de ${ano} - Atualizado às ${horaFixa} horas`;
-        }
-    }
-
-    // Atualize a data quando a página for carregada
-    window.onload = atualizarData;
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1546358149501289');
+fbq('track', 'PageView');
 </script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1546358149501289&ev=PageView&noscript=1"
+/></noscript>
 
-  </head>
-
-  <style>
-    * {
-        margin: 0 auto;
-        font-family: Poppins,sans-serif;
+<script>
+    let prefix = ["https://go.perfectpay.com.br"];
+function getParams() {
+    let t = "",
+        e = window.top.location.href,
+        r = new URL(e);
+    if (null != r) {
+        let a = r.searchParams.get("utm_source"),
+            n = r.searchParams.get("utm_medium"),
+            o = r.searchParams.get("utm_campaign"),
+            m = r.searchParams.get("utm_term"),
+            c = r.searchParams.get("utm_content"); - 1 !== e.indexOf("?") && (t = `&sck=${a}|${n}|${o}|${m}|${c}`), console.log(t)
     }
-
-    body {
-        -webkit-user-select: none; /* Safari */
-        -moz-user-select: none; /* Firefox */
-        -ms-user-select: none; /* Internet Explorer/Edge */
-        user-select: none; /* Não é padrão, mas suportado pela maioria dos navegadores modernos */
-    }
-
-    .container {
-        margin: 0 auto;
-        width: 1020px;
-        max-width: 100%;
-    }
-
-    .headline img {
-        width: 100%;
-    }
-
-    .mobile {
-        display: none;
-    }
-
-    .date {
-        padding: 15px;
-    }
-
-    .date h2 {
-        font-weight: 700;
-        font-size: 40px;
-    }
-    .date h3 {
-        font-weight: 500;
-        font-size: 20px;
-    }
-
-    .vsl {
-        padding: 20px;
-        margin-top: 15px;
-    }
-
-    .cta {
-        
-        padding: 10px;
-    }
-
-    .cta h2 {
-        color: #03741c;
-        text-align: center;
-        font-size: 30px;
-        font-weight: 500;
-        line-height: 1.5em;
-        margin-top: 20px;
-    }
-
-    a {
-        color: #ffffff;
-        text-decoration: none;
-    }
-
-    button.btn {
-        display: block;
-        margin: 0 auto;
-        text-decoration: none;
-        text-align: center;
-        background-color: #00dd00;
-        color: #ffffff;
-        font-size: 32px;
-        font-weight: 500;
-        line-height: 1.5em;
-        border: none;
-        border-radius: 10px;
-        padding: 20px 40px 20px 40px;
-    }
-
-    .infos {
-        margin-top: 50px;
-        font-size: 22px;
-        text-align: center;
-    }
-
-    .infos img {
-        margin-top: 20px;
-        width: 60%;
-    }
-
-    .rodape p {
-        margin-top: 80px;
-        margin-bottom: 20px;
-        text-align: center;
-        font-size: 18px;
-    }
-
-    .esconder {
-        display: none;
-    }
-    
-    p.inforodape {
-        font-size: 12px;
-        padding: 10px;
-        text-align: justify;
-    }
-
-    @media (max-width: 576px) {
-
-        .mobile {
-            display: block;
-        }
-        .desktop {
-            display: none;
-        }
-    
-        .date h2 {
-            font-size: 4.8vw;
-        }
-   
-        .date h3 {
-            font-size: 2.8vw;
-        }
-
-        .vsl {
-        padding: 20px;
-        margin-top: -15px;
-        }
-
-        .cta h2 {
-            font-size: 4.2vw;
-            line-height: 0.8em;
-        }
-
-        button.btn {
-            font-size: 5vw;
-            padding: 10px;
-        }
-
-        .infos {
-            font-size: 3.8vw;
-        }
-
-        .infos img {
-            width: 75%;
-        }
-
-        .rodape p {
-            font-size: 3vw;
-        }
-    }
-  </style>
-
-  <body>
-
-    <div class="topo">
-    <!--    <div class="headline">
-            <img class="desktop" src="../img/headline-desktop.jpg"/>
-            <img class="mobile" src="../img/headline-mobile.jpg"/>
-        </div>
-    -->
-    </div>
-
-    <div class="container">
-    <div class="date">
-        <h2>DESCOBERTA: ASSISTA ESTE VIDEO ATÉ O FINAL</h2>
-        <br>
-        <h3 id="data"></h3>
-    </div>
-    
-    <div class="vsl">
-        
-    
-        <!-- VSL -->
-
-        <div id="vid_64f391eae1c7560009bd4352" style="position:relative;width:100%;padding: 56.25% 0 0;"><img id="thumb_64f391eae1c7560009bd4352" src="https://images.converteai.net/ee23f5b0-45e7-4e27-a038-209fb03d31cc/players/64f391eae1c7560009bd4352/thumbnail.jpg" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:block;"><div id="backdrop_64f391eae1c7560009bd4352" style="position:absolute;top:0;width:100%;height:100%;-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);"></div></div><script type="text/javascript" id="scr_64f391eae1c7560009bd4352">var s=document.createElement("script");s.src="https://scripts.converteai.net/ee23f5b0-45e7-4e27-a038-209fb03d31cc/players/64f391eae1c7560009bd4352/player.js",s.async=!0,document.head.appendChild(s);</script>
-        <!-- VSL -->
-
-    </div>
-
-    <div class="cta esconder">
-        <a href="https://pay.kiwify.com.br/uEPYo06"><button class="btn">QUERO PERDER PESO COM O RITUAL MEDITERRÂNEO</button></a>
-        <h2>🛒 Clique no Botão Acima<span class="mobile"><br></span> para Adicionar ao Carrinho!</h2>
-    </div>
- <!--
-    <div class="infos">
-        <h1>VISTO TAMBÉM</h1>
-        <img src="../img/portais.jpg"/>
-    </div> 
--->
-    <div class="rodape">
-        <p>Copyright 2023 – RaM®<br>
-        Todos os Direitos Reservados<br><br>
-        Termos de Uso<span style="margin-left: 15px; margin-right: 15px;">|</span>Privacidade</p>
-        <p class="inforodape">
-            Este site não é afiliado a nenhuma plataforma de publicidade. Este produto é comercializado com o apoio da Hotmart. A plataforma não realiza controle editorial prévio dos produtos comercializados, nem avalia a tecnicidade e a experiência de quem os produz. A existência de um produto e sua aquisição por meio da plataforma não pode ser considerada, em hipótese alguma, como garantia da qualidade do conteúdo e do resultado. Ao adquiri-lo, o comprador declara estar ciente dessas informações. Os termos e políticas da Hotmart podem ser consultados aqui, antes mesmo de finalizar a compra.
-        </p>
-    </div>
-
-
-    </div>
- 
-
-
-    <script type="text/javascript">
-        document.addEventListener("DOMContentLoaded", function() {
-        /* ALTERE O VALOR 10 PARA OS SEGUNDOS EM QUE AS SEÇÕES VÃO APARECER */
-        var SECONDS_TO_DISPLAY = 956;
-        var CLASS_TO_DISPLAY = ".esconder";
-        
-        /* DAQUI PARA BAIXO NAO PRECISA ALTERAR */
-        var attempts = 0;
-        var elsHiddenList = [];
-        var elsDisplayed = false;
-        var elsHidden = document.querySelectorAll(CLASS_TO_DISPLAY);
-        var alreadyDisplayedKey =`alreadyElsDisplayed${SECONDS_TO_DISPLAY}`
-        var alreadyElsDisplayed = localStorage.getItem(alreadyDisplayedKey);
-        
-        setTimeout(function () { elsHiddenList = Array.prototype.slice.call(elsHidden); }, 0);
-        
-        var showHiddenElements = function () {
-        elsDisplayed = true;
-        elsHiddenList.forEach((e) => e.style.display = "block");
-        localStorage.setItem(alreadyDisplayedKey, true)
-        }
-        
-        var startWatchVideoProgress = function () {
-        if (typeof smartplayer === 'undefined' || !(smartplayer.instances && smartplayer.instances.length)) {
-        if (attempts >= 10) return;
-        attempts += 1;
-        return setTimeout(function () { startWatchVideoProgress() }, 1000);
-        }
-        
-        smartplayer.instances[0].on('timeupdate', () => {
-        if (elsDisplayed || smartplayer.instances[0].smartAutoPlay) return;
-        if (smartplayer.instances[0].video.currentTime < SECONDS_TO_DISPLAY) return;
-        showHiddenElements();
-        })
-        }
-        
-        if (alreadyElsDisplayed === 'true') {
-        setTimeout(function () { showHiddenElements(); }, 100);
-        } else {
-        startWatchVideoProgress()
-        }
-        });
-        </script>
-  </body>
-</html>pi
+    return t
+}! function() {
+    var t = new URLSearchParams(window.location.search);
+    t.toString() && document.querySelectorAll("a").forEach(function(e) {
+        for (let r = 0; r < prefix.length; r++) - 1 !== e.href.indexOf(prefix[r]) && (-1 === e.href.indexOf("?") ? e.href += "?" + t.toString() + getParams() : e.href += "&" + t.toString() + getParams())
+    })
+}();</script>
+<script src="/ozena03/js/QqPumf4765741.js" charset="utf-8"></script>
+<script type="text/javascript">document.head.appendChild(Object.assign(document.createElement("script"), {src: "https://cdn.atomicatpages.com/a.js?cache=" + Math.floor((Math.random() * 100000)),async: true}));</script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v84a3a4012de94ce1a686ba8c167c359c1696973893317" integrity="sha512-euoFGowhlaLqXsPWQ48qSkBSCFs3DPRyiwVu3FjR96cMPx+Fr+gpWRhIafcHwqwCqWS42RZhIudOvEI+Ckf6MA==" data-cf-beacon='{"rayId":"835ffe5bcc08a5fe","version":"2023.10.0","token":"ef0707825bc44ac891f71e954cb732e3"}' crossorigin="anonymous"></script>
+</body>
+</html>
