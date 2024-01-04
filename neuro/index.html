@@ -406,15 +406,41 @@ text-align: center;
 }
 }
 </style>
-<div class="description-1657813783037JBeru3-element ">
-<h3>
-<p>Esta apresentação só ficará disponível até <span id="data-hoje"></span> </p>
-</h3>
-</div>
-</div>
-</div>
-</div>
-<div class="division-CcCNjf4764860__wrapper">
+<html>
+<head>
+    <title>Data de Hoje</title>
+    <style>
+        #data-hoje {
+            color: red;
+        }
+    </style>
+</head>
+<body data-rsssl=1>
+    <p>Esta apresentação só ficará disponível até <span id="data-hoje"></span> </p>
+
+    <script>
+        // Obtém a data de hoje
+        var hoje = new Date();
+
+        // Formata a data no formato desejado (exemplo: 20/06/2023)
+        var dia = hoje.getDate();
+        var mes = hoje.getMonth() + 1; // Os meses são indexados a partir de 0
+        var ano = hoje.getFullYear();
+
+        // Adiciona um zero à esquerda para dias e meses menores que 10
+        if (dia < 10) {
+            dia = '0' + dia;
+        }
+        if (mes < 10) {
+            mes = '0' + mes;
+        }
+
+        // Combina os valores formatados para criar a data no formato "dd/mm/yyyy"
+        var dataFormatada = dia + '/' + mes + '/' + ano;
+
+        // Atualiza o conteúdo do elemento com a data de hoje
+        document.getElementById('data-hoje').textContent = dataFormatada;
+    </script>
 <style>
 #division-CcCNjf4764860 {
 border: none;
