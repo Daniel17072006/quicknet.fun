@@ -309,14 +309,49 @@ padding-bottom: 1.5vh;
 text-align: center;
 }
 }
-</style>
-<div class="description-16578141835486qxbNr-element ">
-<h3>
-ao vivo&nbsp;<span class="xl"></span>...
-</h3>
-</div>
-</div>
-<style>
+title>Visualizadores ao vivo</title>
+  <style>
+  
+    .visualizadores {
+      color: black;
+      background-color: transparent;
+      height: 40px;
+    }
+  </style>
+</head>
+<body data-rsssl=1>
+  <p class="visualizadores">vivo <span id="numero">582</span>...</p>
+
+
+  <script>
+    let crescente = true; // Flag que indica se o número de visualizadores está aumentando ou diminuindo
+
+    function alterarVisualizadores() {
+      // Obtém o elemento que exibe o número de visualizadores
+      let numero = document.getElementById("numero");
+
+      // Altera o número de visualizadores
+      let visualizadores = parseInt(numero.textContent, 10);
+      if (crescente) {
+        visualizadores += 6;
+      } else {
+        visualizadores -= 3;
+      }
+
+      // Atualiza o número de visualizadores exibido na página
+      numero.textContent = visualizadores;
+
+      // Altera a direção do aumento/diminuição do número de visualizadores
+      if (visualizadores >= 2850) {
+        crescente = false;
+      } else if (visualizadores <= 1582) {
+        crescente = true;
+      }
+    }
+
+    // Chama a função a cada segundo
+    setInterval(alterarVisualizadores, 5000);
+  </script>
 .video-qqFebR6511809 {
 border: 1px solid #4adede;
 box-shadow: 0 0 6px 3px rgba(74, 222, 222, 0.33);
